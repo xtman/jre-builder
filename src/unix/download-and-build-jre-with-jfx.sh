@@ -49,7 +49,7 @@ echo "Downloading $JAVAFX_JMODS_URL"
 if [[ ! -z ${CURL} ]]; then
     $CURL -o ${JAVAFX_JMODS_FILE} ${JAVAFX_JMODS_URL}
 else
-    $WGET -o ${JAVAFX_JMODS_FILE} ${JAVAFX_JMODS_URL}
+    $WGET ${JAVAFX_JMODS_FILE} ${JAVAFX_JMODS_URL}
 fi
 [[ ! -f ${JAVAFX_JMODS_FILE} ]] && echo "Error: failed to download ${JAVAFX_JMODS_FILE}." && exit 4
 
