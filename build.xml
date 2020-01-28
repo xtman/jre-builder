@@ -1,0 +1,119 @@
+<project name="jre-builder" default="package">
+    <property name="jdk.version" value="13.0.2"/>
+    <property name="javafx.version" value="13.0.2"/>
+	<!-- set platform dependent properties -->
+	<condition property="isMac">
+		<and>
+			<os family="mac" />
+			<os family="unix" />
+		</and>
+	</condition>
+	<condition property="isWindows">
+		<os family="windows" />
+	</condition>
+	<condition property="isLinux">
+		<and>
+			<os family="unix" />
+			<not>
+				<os family="mac" />
+			</not>
+		</and>
+	</condition>
+	<target name="setPropertiesMac" if="isMac">
+		<property name="os" value="osx" />
+        <property name="javafx.jmods.home" location="/opt/javafx-jmods-${javafx.version}" />
+	</target>
+	<target name="setPropertiesWindows" if="isWindows">
+		<property name="os" value="windows" />
+        <property name="javafx.jmods.home" location="W:\javafx-jmods-${javafx.version}" />
+	</target>
+	<target name="setPropertiesLinux" if="isLinux">
+		<property name="os" value="linux" />
+        <property name="javafx.jmods.home" location="/opt/javafx-jmods-${javafx.version}" />
+        <property name="package.type" value="tar.gz"/>
+	</target>
+    <target name="setProperties" depends="setPropertiesWindows, setPropertiesMac, setPropertiesLinux">
+        <property name="jre.name" value="openjdk-${jdk.version}-jre" />
+        <property name="package.name" value="${jre.name}-with-jfx_${os}-x64" />
+	</target>
+	<target name="check" depends="setProperties">
+		<echo message="ant.version: ${ant.version}" />
+		<fail message="Ant 1.10.6+ required.">
+			<condition>
+				<not>
+					<antversion atleast="1.10.6" />
+				</not>
+			</condition>
+		</fail>
+		<echo message="java.home: ${java.home}" />
+		<echo message="java.version: ${java.version}" />
+		<fail message="Java 13+ is required.">
+			<condition>
+				<not>
+					<or>
+						<matches string="${java.version}" pattern="^13(\.\d+)*" />
+						<matches string="${java.version}" pattern="^14(\.\d+)*" />
+						<matches string="${java.version}" pattern="^14-.*" />
+					</or>
+				</not>
+			</condition>
+		</fail>
+		<echo message="javafx.jmods.home: ${javafx.jmods.home}" />
+		<fail message="JavaFX jmods directory: ${javafx.jmods} does not exist.">
+			<condition>
+				<not>
+					<available file="${javafx.jmods.home}" type="dir" />
+				</not>
+			</condition>
+		</fail>
+	</target>
+	<target name="jdk-modules" depends="check">
+		<echo message="Resolving jdk.moudles..." />
+		<exec executable="java" output="jdk.modules.tmp">
+			<arg value="--list-modules" />
+		</exec>
+		<loadfile property="jdk.modules" srcFile="jdk.modules.tmp">
+			<filterchain>
+				<replaceregex pattern="@.*" replace="," />
+				<striplinebreaks />
+				<replaceregex pattern=",$" replace="" />
+			</filterchain>
+		</loadfile>
+		<delete file="jdk.modules.tmp" />
+		<echo message="jdk.modules: ${jdk.modules}" />
+	</target>
+	<target name="clean">
+		<echo message="cleaning up build directory..." />
+        <delete dir="build/${jre.name}" quiet="true" />
+	</target>
+	<target name="init" depends="clean, jdk-modules">
+		<echo message="initialising build directory..." />
+		<mkdir dir="build" />
+	</target>
+	<target name="link" depends="init">
+        <echo message="jlink: building Java Runtime to ./build/openjdk-jre-${jdk.version}/" />
+        <link destDir="build/${jre.name}" modulepath="${java.home}/jmods${path.separator}${javafx.jmods.home}" modules="${jdk.modules},javafx.controls,javafx.swing" compress="zip" includeHeaders="false" includeNativeCommands="true" includeManPages="false" debug="false" />
+	</target>
+    <target name="packageWindows" depends="link" if="isWindows">
+        <zip destfile="build/${package.name}.zip" basedir="build" includes="${jre.name}/*/**"/>
+	</target>
+    <target name="packageMac" depends="link" if="isMac">
+        <tar destfile="build/${package.name}.tar" basedir="build" includes="${jre.name}/*/**"/>
+        <gzip destfile="build/${package.name}.tar.gz" src="build/${package.name}.tar"/>
+        <delete file="build/${package.name}.tar" quiet="true" />
+	</target>
+	<target name="packageLinux" depends="link" if="isLinux">
+        <tar destfile="build/${package.name}.tar" basedir="build" includes="${jre.name}/*/**"/>
+        <gzip destfile="build/${package.name}.tar.gz" src="build/${package.name}.tar"/>
+        <delete file="build/${package.name}.tar" quiet="true" />
+	</target>
+	<target name="package" depends="packageMac, packageWindows, packageLinux">
+        <echo message="cleaning up temporary build directories..." />
+        <delete dir="build/${jre.name}" quiet="true" /> 
+	</target>
+	<target name="cleanAll">
+		<echo message="cleaning up build directory" />
+		<delete dir="build" quiet="false" />
+	</target>
+</project>
+
