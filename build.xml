@@ -1,6 +1,6 @@
 <project name="jre-builder" default="package">
-    <property name="jdk.version" value="13.0.2"/>
-    <property name="javafx.version" value="13.0.2"/>
+    <property name="jdk.version" value="14.0.1"/>
+    <property name="javafx.version" value="14.0.1"/>
 	<!-- set platform dependent properties -->
 	<condition property="isMac">
 		<and>
