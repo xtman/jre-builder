@@ -1,6 +1,6 @@
 <project name="jre-builder" default="package">
-    <property name="jdk.version" value="14.0.2"/>
-    <property name="javafx.version" value="14.0.2"/>
+    <property name="jdk.version" value="15.0.2"/>
+    <property name="javafx.version" value="15.0.1"/>
 	<!-- set platform dependent properties -->
 	<condition property="isMac">
 		<and>
@@ -55,6 +55,8 @@
 						<matches string="${java.version}" pattern="^13(\.\d+)*" />
 						<matches string="${java.version}" pattern="^14(\.\d+)*" />
 						<matches string="${java.version}" pattern="^14-.*" />
+						<matches string="${java.version}" pattern="^15(\.\d+)*" />
+						<matches string="${java.version}" pattern="^15-.*" />
 					</or>
 				</not>
 			</condition>
