@@ -1,6 +1,8 @@
 <project name="jre-builder" default="package">
-    <property name="jdk.version" value="15.0.2"/>
-    <property name="javafx.version" value="15.0.1"/>
+	<!--
+	<property file="${user.home}/.jre-builder/build.properties"/>
+	-->
+	<property file="build.properties"/>
 	<!-- set platform dependent properties -->
 	<condition property="isMac">
 		<and>
@@ -21,17 +23,13 @@
 	</condition>
 	<target name="setPropertiesMac" if="isMac">
 		<property name="os" value="osx" />
-        <property name="javafx.jmods.home" location="/opt/javafx-jmods-${javafx.version}" />
 	</target>
 	<target name="setPropertiesWindows" if="isWindows">
 		<property name="os" value="windows" />
-        <property name="javafx.jmods.home" location="W:\javafx-jmods-${javafx.version}" />
 	</target>
     <target name="setPropertiesLinux" if="isLinux">
         <echo message="Note: you need to make sure binutils package is installed for Linux, Otherwise it will fail with objcopy error..." />
 		<property name="os" value="linux" />
-        <property name="javafx.jmods.home" location="/opt/javafx-jmods-${javafx.version}" />
-        <property name="package.type" value="tar.gz"/>
 	</target>
     <target name="setProperties" depends="setPropertiesWindows, setPropertiesMac, setPropertiesLinux">
         <property name="jre.name" value="openjdk-${jdk.version}-jre" />
@@ -57,12 +55,16 @@
 						<matches string="${java.version}" pattern="^14-.*" />
 						<matches string="${java.version}" pattern="^15(\.\d+)*" />
 						<matches string="${java.version}" pattern="^15-.*" />
+						<matches string="${java.version}" pattern="^17(\.\d+)*" />
+						<matches string="${java.version}" pattern="^17-.*" />
+						<matches string="${java.version}" pattern="^18(\.\d+)*" />
+						<matches string="${java.version}" pattern="^18-.*" />
 					</or>
 				</not>
 			</condition>
 		</fail>
 		<echo message="javafx.jmods.home: ${javafx.jmods.home}" />
-		<fail message="JavaFX jmods directory: ${javafx.jmods} does not exist.">
+		<fail message="JavaFX jmods directory: ${javafx.jmods.home} does not exist.">
 			<condition>
 				<not>
 					<available file="${javafx.jmods.home}" type="dir" />
@@ -119,4 +121,3 @@
 		<delete dir="build" quiet="false" />
 	</target>
 </project>
-
